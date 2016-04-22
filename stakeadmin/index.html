@@ -1,0 +1,503 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8">
+		
+		<title>Stake Dance Card Admin</title>
+		<meta name="description" content="Stake Dance Card Admin">
+		<meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="backgrid/backgrid.min.css">
+        <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/styles.css">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+		<script type="text/javascript" src="underscore/underscore.js"></script>
+		<script type="text/javascript" src="backbone/backbone-min.js"></script>
+		<script type="text/javascript" src="js/parse-1.3.0.min.js"></script>
+		<script type="text/javascript" src="backgrid/backgrid.min.js"></script>
+		<script type="text/javascript" src="forge/forge.min.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="ckeditor/ckeditor.js"></script>
+</head>
+
+<body>
+
+	<!-- Sign in container -->
+    <div class="container" id="signin-container">
+
+      <form class="form-signin" role="form">
+        <h3 class="form-signin-heading">Stake Dance Card Admin</h3>
+        <h3 class="form-signin-heading">Please sign in</h3>
+        <br>
+        <input type="username" class="form-control" placeholder="Username" id="usernameField" required autofocus>
+        <input type="password" class="form-control" placeholder="Password" id="passwordField" required>
+        <button class="btn btn-lg btn-primary btn-block" id="signin-button">Sign in</button>
+      </form>
+
+    </div> <!-- /container -->
+	
+	<!-- Main App container -->
+	<div id="main-app-container">
+		<nav class="navbar navbar-default" role="navigation">	
+	        <p class="navbar-text">Stake Dance Card Admin</p>
+	        <button type="button" class="btn btn-default navbar-btn navbar-right" onclick="signOut()">Sign out</button>
+	        <button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal" data-target="#helpPanel">Help</button>
+		</nav>
+	
+		<div id="region-name">Subtext for header</div>
+	
+		<div class="panel panel-primary">
+	        <div class="panel-heading">
+	            <h4>Stakes</h4>
+	        </div>
+			<div id="stakes-grid"></div>
+			<br>
+			<button type="button" class="btn btn-success add-button" onclick="addStake()">Add Stake</button>
+	    </div>
+
+	    <div class="panel panel-primary">
+	        <div class="panel-heading">
+	            <h4>Dances</h4>
+	        </div>
+			<div id="dances-grid"></div>
+			<br>
+			<button type="button" class="btn btn-success add-button" onclick="addDance()">Add Dance</button>
+	        <br><p class="grid-text-message">*Optional Address is needed only if the dance is at a different address than the one normally used by the stake.</p>
+	    </div>
+    
+	    <div class="panel panel-primary">
+	        <div class="panel-heading">
+	            <h4>Standards</h4>
+	        </div>
+			<form>
+			    <textarea id="standardsEditor" name="standardsEditor"></textarea>
+			</form>
+			<button type="button" class="btn btn-primary save-button" onclick="saveStandards()">Save Standards</button>
+		</div>
+
+		<!-- Modal -->
+		<div class="modal fade" id="helpPanel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		        <h4 class="modal-title" id="myModalLabel">Stake Dance Card Admin Help</h4>
+		      </div>
+		      <div class="modal-body">
+		          <p>Add all the stakes in your region by clicking the "Add Stake" button and entering the name of the stake, the address where the dances are held and a password that will be used by the bishops to activate the dance card. We suggest a password that is easy for the bishops to remember, but hard for the youth to guess.</p>
+		          <p>Next add all the dances by clicking the "Add Dance" button. Select the appropriate stake, enter the date and time, and add any additional info such as the type of dance (casual, church dress, Halloween, etc.) Enter an address if the location of the dance is different from the normal one used by the stake. The date and time must be entered in this format:</p>
+		          <p>2014-09-26 8:00pm</p>
+		          <p>The day and month must be entered as 2 digits including any leading zeroes.</p>
+		          <p>Use the editor at the bottom to enter dance standards for your region.</p>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+
+		// Initialize
+		Parse.initialize("VlcUWoZY2VFPeZe28LjtvMCuGIH9KEhhiyRSRxMv", "ZCIriI8MUz4QDxs55WRJUfvko6iyOWDwK1KXLCI2");
+        Parse.serverURL = "https://parseapi.back4app.com";
+		
+		// Are we signed in?
+		var currentUser = Parse.User.current();
+		if (currentUser) {
+		    // Already logged in
+			$('#signin-container').hide();
+			setupUser();
+		} else {
+		    // must login
+			$('#main-app-container').hide();
+		}		
+		
+		$('#signin-button').click(function(ev) {
+ 		   ev.preventDefault(ev);
+			signIn();
+		});
+		
+		function setupUser() {
+			region = currentUser.get('region');
+        
+	        // Show region name
+	        $("#region-name").text(region);
+		
+	        var DeleteCell = Backgrid.Cell.extend({
+	              template: _.template('<span class="glyphicon glyphicon-remove-circle"></span>'),
+	              className: "delete-cell",
+	              events: {
+	                  "click": "deleteRow"
+	              },
+	              deleteRow: function (e) {
+	                  e.preventDefault();
+	                  var model = this.model;
+	                  if (model.className == "stake") {
+	                    // Confirm
+	                      var r = confirm("Delete " + model.get("stake") + "?");
+	                      if (r == true) {
+	                          model.collection.remove(this.model);
+	                          model.destroy({
+							   success: function(results) {
+								   //console.log("success");
+				                },
+				                error: function(results, error) {
+ 								   //console.log("error: " + error);
+				                }
+						 });
+	                      }
+	                  }
+	                  else {
+	                    // Just delete dances
+	                      model.collection.remove(this.model);
+	                      model.destroy({
+							   success: function(results) {
+				                },
+				                error: function(results, error) {
+				                }
+						 });
+	                  }
+	              },
+	              render: function () {
+	                  this.$el.html(this.template());
+	                  this.delegateEvents();
+	                  return this;
+	              }
+	          });
+          
+ 			// -----------------------------
+			// Show stakes
+			// -----------------------------
+			var Stake = Parse.Object.extend({
+				className: "stake",
+				initialize: function () {
+					Parse.Object.prototype.initialize.apply(this, arguments);
+					this.on("change", function (model, options) {
+						if (options && options.save === false) return;
+						if (!model.get("stake") || !model.get("address") || !model.get("password")) return;
+						model.save();
+					});
+					this.on("add", function (model, options) {
+						// add ACL
+						model.setACL(userACL());
+					});
+					this.on("backgrid:next", function (row, column, outOfBounds) {
+						if (outOfBounds) {
+							addStake();
+						}
+					});
+				}
+			});
+			danceGrid = null;
+			var query = new Parse.Query(Stake);
+			query.equalTo("region", region);
+			stakes = query.collection();
+			stakes.on("reset", function() {
+				// When stakes is loaded, redisplay dances
+				if (danceGrid)
+					danceGrid.body.render();
+			});
+			var key = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+		 
+			 var columns = [{
+					name: "stake",
+					label: "Stake",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell stake-cell'
+		             })
+				}, {
+					name: "address",
+					label: "Address",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell address-cell'
+		            })
+	            }, {
+					name: "password",
+					label: "Password",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell password-cell'
+		            }),
+				    formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+						fromRaw: function (string, model) {
+							if (string == undefined)
+								return undefined;
+							return decrypt(string, key);
+						},
+						toRaw: function (string, model) {
+							if (string == undefined)
+								return undefined;
+							return encrypt(string, key);
+						},
+				    })
+	            }, {
+	                label: "Delete",
+				    editable: false,
+	                cell: DeleteCell
+	            }];
+		
+			// Initialize a new Grid instance
+			stakeGrid = new Backgrid.Grid({
+				 columns: columns,
+				 collection: stakes,
+				 emptyText: "Click \"Add Stake\" button to add a stake"
+
+			 });
+         
+			 // Render the grid and attach the root to your HTML document
+			 $("#stakes-grid").append(stakeGrid.render().sort("stake", "ascending").el);
+
+			// Fetch stakes
+			stakes.fetch({reset: true});
+
+			// -----------------------------
+			// Show dances
+			// -----------------------------
+			var Dance = Parse.Object.extend({
+				className: "event",
+			 	validate: validateDateTime,
+				initialize: function () {
+					Parse.Object.prototype.initialize.apply(this, arguments);
+					this.on("change", function (model, options) {
+						if (options && options.save === false) return;
+						model.save();
+					});
+                    this.on("change:datetime", function (model, value, options) {
+                        var re = /^(\d{4})-\d{2}-\d{2} \d{1,2}:\d{2}(am|pm)/;
+                        var match = re.exec(value);
+                        if (match) {
+                            // Set year
+                            var year = match[1];
+                            if (year != this.get("year")) {
+                                this.set("year", year);
+                            }
+                        }
+                    });
+					this.on("add", function (model, options) {
+						// add ACL
+						model.setACL(userACL());
+					});
+					this.on("backgrid:next", function (row, column, outOfBounds) {
+						if (outOfBounds) {
+							addDance();
+						}
+					});
+				}
+			});
+			var query = new Parse.Query(Dance);
+			query.equalTo("region", region);
+			dances = query.collection();
+
+			 var columns = new Backgrid.Columns([{
+					name: "stake",
+					label: "Stake",
+		            cell: Backgrid.SelectCell.extend({
+		                 className: 'select-cell stake-cell',
+						 optionValues: function () {
+							 return [{
+								 name: "Stake", 
+								 values: stakes.map(function(model) {
+	                                var stake = model.get("stake");
+									return [stake, stake];
+	                             })
+	                         }];
+						 }
+		            })
+				}, {
+					name: "datetime",
+					label: "Date and Time",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell date-time-cell'
+		            })
+				}, {
+					name: "info",
+					label: "Additional Info",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell info-cell'
+		            })
+				}, {
+					name: "address",
+					label: "Optional Address*",
+		            cell: Backgrid.StringCell.extend({
+		                 className: 'string-cell dance-address-cell'
+		            })
+	             }, {
+	                 label: "Delete",
+ 				    editable: false,
+	                 cell: DeleteCell
+	             }]);
+        
+			// Initialize a new Grid instance
+			danceGrid = new Backgrid.Grid({
+				 columns: columns,
+				 collection: dances,
+				 emptyText: "Click \"Add Dance\" button to add a dance"
+			 });
+		 
+	         // Render the grid and attach the root to your HTML document
+	         $("#dances-grid").append(danceGrid.render().sort("datetime", "ascending").el);
+         
+			 // Fetch dances
+			 dances.fetch({reset: true});
+		 
+			 // -----------------------------
+			 // Edit Standards
+			 // -----------------------------
+			 regionObject = null;
+			 var Region = Parse.Object.extend("region");
+			 var query = new Parse.Query(Region);
+			 query.equalTo("region", region);
+			 query.find({
+			   success: function(results) {
+				   if (results.length > 0) {
+					   regionObject = results[0];
+					   var standards = regionObject.get("standards");
+					   CKEDITOR.instances.standardsEditor.setData(standards);
+					   //tinyMCE.activeEditor.setContent(standards);
+                    }
+					else {
+						// No region object. Create one
+						regionObject = new Region();
+						regionObject.setACL(userACL());
+						regionObject.save({
+							region: region
+						});
+					}
+                },
+                error: function(results, error) {
+                }
+			 });
+		 
+			 // Standards Editor
+			editor = CKEDITOR.replace('standardsEditor', {
+			    uiColor: '#9AB8F3',
+				toolbarGroups: [
+			    { name: 'clipboard',   groups: [ 'clipboard', 'undo' ] },
+			    { name: 'editing',     groups: [ 'find', 'selection', 'spellchecker' ] },
+			    { name: 'links' },
+			    { name: 'insert' },
+			    { name: 'tools' },
+			    { name: 'document',    groups: [ 'mode', 'document', 'doctools' ] },
+			    { name: 'others' },
+			    '/',
+			    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+			    { name: 'paragraph',   groups: [ 'list', 'indent', 'blocks', 'align' ] },
+			    { name: 'styles' },
+			    { name: 'colors' },
+				]
+			});
+			editor.on('save', saveStandards);
+		}
+		
+		 function addStake() {
+			 stakes.add({region: region});
+			 stakeGrid.body.rows[stakes.length - 1].cells[0].enterEditMode();
+			 //alert("Add Stake");
+		 }
+
+		function addDance() {
+            dances.add({region: region});
+		 	danceGrid.body.rows[dances.length - 1].cells[0].enterEditMode();
+			// alert("Add Dance");
+		}
+		
+		function saveStandards() {
+			var text = CKEDITOR.instances.standardsEditor.getData();
+			regionObject.save({
+			  standards:text
+			}, {
+			  success: function(standards) {
+			    // The object was saved successfully.
+				alert("Standards were successfully saved");
+			  },
+			  error: function(standards, error) {
+			    // The save failed.
+			    // error is a Parse.Error with an error code and message.
+				alert("There was a problem saving standards.\n\n" + error);
+			  }
+			});
+		}
+		
+		function signIn() {
+			var username = $('#usernameField').val();
+			var password = $('#passwordField').val();
+			Parse.User.logIn(username, password, {
+			  success: function(user) {
+		  		$('#signin-container').hide();
+		  		$('#main-app-container').show();
+				currentUser = user;
+				setupUser();
+			  },
+			  error: function(user, error) {
+				  alert("Incorrect username or password");
+			  }			
+         	});
+        }
+		
+		function signOut() {
+			Parse.User.logOut();
+			currentUser = null;
+			stakeGrid.remove();
+			danceGrid.remove();
+	  		$('#signin-container').show();
+	  		$('#main-app-container').hide();
+		}
+		
+		function validateDateTime(attrs, options) {
+			// Make sure date and time are in the correct format
+			var re = /\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}(am|pm)/;
+			if (attrs.datetime == undefined)
+				return undefined;	// Blank value
+            var match = re.exec(attrs.datetime);
+            if (match) {
+				return undefined;	// It's OK!
+            }
+				
+			alert("Date and Time must be in this format:\n\n\t2014-09-23 8:00pm\n\nwhere the month and day numbers must be exactly 2 digits (01, 02, 03...).")
+			return "There is an error";
+		}
+		
+		function decrypt(passwordText, keyText) {
+		
+			var passwordBytes = forge.util.decode64(passwordText);
+			var passwordBuffer = forge.util.createBuffer(passwordBytes);
+			var key = forge.util.createBuffer(keyText, 'raw');
+			var decipher = forge.cipher.createDecipher('AES-CBC', key);
+	
+			decipher.start({iv: key});
+			decipher.update(passwordBuffer);
+			decipher.finish();
+
+            var password = decipher.output.data;
+			//console.log(password);
+			return password;
+		}
+	
+		function encrypt(passwordText, keyText) {
+
+			var passwordBuffer = forge.util.createBuffer(passwordText);
+			var key = forge.util.createBuffer(keyText, 'raw');
+			var cipher = forge.cipher.createCipher('AES-CBC', key);
+	
+			cipher.start({iv: key});
+			cipher.update(passwordBuffer);
+			cipher.finish();
+
+			var passwordText = forge.util.encode64(cipher.output.data)
+			//console.log(passwordText);
+			return passwordText;
+		
+		}
+    
+        function userACL() {
+            var userACL = new Parse.ACL(Parse.User.current())
+            userACL.setPublicReadAccess(true);
+            return userACL;
+        }
+
+	</script>
+
+
+</body>
+
+</html>

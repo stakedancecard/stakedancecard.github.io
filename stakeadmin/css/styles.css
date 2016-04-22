@@ -1,0 +1,127 @@
+body {
+    /* text-align: center; */
+    padding: 0px 25px;
+}
+
+div.title {
+    text-align: center;
+    font-size: 40px;
+    background-color: CornflowerBlue;
+    color: white;
+}
+
+div.subtitle {
+    text-align: center;
+    font-size: 24px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.glyphicon {
+    font-size: large;
+    margin-left: 12px;
+}
+
+.navbar-text {
+    font-size: 20px;
+}
+
+.navbar-btn {
+    margin-right: 15px;
+}
+
+.add-button {
+    margin: 10px;
+}
+
+.save-button {
+    margin: 10px;
+}
+
+.grid-text-message {
+    margin: 10px 8px;
+}
+
+.form-signin {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+.form-control {
+    margin-bottom: 15px;
+}
+
+#region-name {
+    margin: 10px;
+    font-size: 20px;
+}
+
+body h2 {
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+body h3 {
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+body h4 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.backgrid thead th a {
+    color: #000;
+    text-align: left;
+}
+
+/* column widths */
+.delete-cell {
+    width: 50px;
+}
+
+.stake-cell {
+    width: 20%;
+    text-align: left;
+}
+
+.address-cell {
+    width: 50%;
+}
+
+.password-cell {
+    width: 25%;
+}
+
+.date-time-cell {
+    width: 25%;
+}
+
+.info-cell {
+    width: 25%;
+}
+
+.dance-address-cell {
+    width: 50%;
+}
+
+/* BackGrid overrides */
+.backgrid thead th a {
+    /*color: #5090b0;*/
+    text-align: left;
+}
+
+.backgrid th {
+    background-image: linear-gradient(#d8d8d8, #f0f0f0);
+}
+
+/* Or maybe you enjoy zebra stripes */
+.backgrid tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.backgrid .select-cell {
+    text-align: left;  
+}
