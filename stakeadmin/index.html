@@ -63,6 +63,15 @@
 	        <br><p class="grid-text-message">*Optional Address is needed only if the dance is at a different address than the one normally used by the stake.</p>
 	    </div>
     
+		<div class="panel panel-primary">
+	        <div class="panel-heading">
+	            <h4>Administrators</h4>
+	        </div>
+			<div id="admins-grid"></div>
+			<br>
+			<button type="button" class="btn btn-success add-button" onclick="addAdmin()">Add Administrator</button>
+	    </div>
+
 	    <div class="panel panel-primary">
 	        <div class="panel-heading">
 	            <h4>Standards</h4>
@@ -73,7 +82,7 @@
 			<button type="button" class="btn btn-primary save-button" onclick="saveStandards()">Save Standards</button>
 		</div>
 
-		<!-- Modal -->
+		<!-- Help Modal -->
 		<div class="modal fade" id="helpPanel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		  <div class="modal-dialog">
 		    <div class="modal-content">
@@ -86,6 +95,7 @@
 		          <p>Next add all the dances by clicking the "Add Dance" button. Select the appropriate stake, enter the date and time, and add any additional info such as the type of dance (casual, church dress, Halloween, etc.) Enter an address if the location of the dance is different from the normal one used by the stake. The date and time must be entered in this format:</p>
 		          <p>2014-09-26 8:00pm</p>
 		          <p>The day and month must be entered as 2 digits including any leading zeroes.</p>
+		          <p>Add your information and that of any other administrators by clicking the "Add Administrator" button.</p>
 		          <p>Use the editor at the bottom to enter dance standards for your region.</p>
 		      </div>
 		      <div class="modal-footer">
@@ -340,6 +350,77 @@
 			 // Fetch dances
 			 dances.fetch({reset: true});
 		 
+  			// -----------------------------
+ 			// Show admins
+ 			// -----------------------------
+ 			var Admin = Parse.Object.extend({
+ 				className: "administrator",
+ 				initialize: function () {
+ 					Parse.Object.prototype.initialize.apply(this, arguments);
+ 					this.on("change", function (model, options) {
+ 						if (options && options.save === false) return;
+ 						if (!model.get("firstName") || !model.get("lastName") || !model.get("email")) return;
+ 						model.save();
+ 					});
+ 					this.on("add", function (model, options) {
+ 						// add ACL
+ 						model.setACL(userACL());
+ 					});
+ 					this.on("backgrid:next", function (row, column, outOfBounds) {
+ 						if (outOfBounds) {
+ 							// addStake();
+ 						}
+ 					});
+ 				}
+ 			});
+ 			var query = new Parse.Query(Admin);
+ 			query.equalTo("region", region);
+ 			admins = query.collection();
+		 
+ 			 var columns = [{
+ 					name: "firstName",
+ 					label: "First Name",
+ 		            cell: Backgrid.StringCell.extend({
+ 		                 className: 'string-cell firstName-cell'
+ 		             })
+ 				}, {
+ 					name: "lastName",
+ 					label: "Last Name",
+ 		            cell: Backgrid.StringCell.extend({
+ 		                 className: 'string-cell lastName-cell'
+ 		            })
+ 				}, {
+ 					name: "email",
+ 					label: "Email",
+ 		            cell: Backgrid.StringCell.extend({
+ 		                 className: 'string-cell email-cell'
+ 		            })
+ 	            }, {
+ 					name: "calling",
+ 					label: "Calling (optional)",
+ 		            cell: Backgrid.StringCell.extend({
+ 		                 className: 'string-cell calling-cell'
+ 		            })
+ 	            }, {
+ 	                label: "Delete",
+ 				    editable: false,
+ 	                cell: DeleteCell
+ 	            }];
+		
+ 			// Initialize a new Grid instance
+ 			adminGrid = new Backgrid.Grid({
+ 				 columns: columns,
+ 				 collection: admins,
+ 				 emptyText: "Click \"Add Administrator\" button to add an administrator"
+
+ 			 });
+         
+ 			 // Render the grid and attach the root to your HTML document
+ 			 $("#admins-grid").append(adminGrid.render().sort("lastName", "ascending").el);
+
+ 			// Fetch stakes
+ 			admins.fetch({reset: true});
+
 			 // -----------------------------
 			 // Edit Standards
 			 // -----------------------------
@@ -401,6 +482,12 @@
 			// alert("Add Dance");
 		}
 		
+		 function addAdmin() {
+			 admins.add({region: region});
+			 adminGrid.body.rows[admins.length - 1].cells[0].enterEditMode();
+			 //alert("Add Admin");
+		 }
+
 		function saveStandards() {
 			var text = CKEDITOR.instances.standardsEditor.getData();
 			regionObject.save({
@@ -439,6 +526,7 @@
 			currentUser = null;
 			stakeGrid.remove();
 			danceGrid.remove();
+			adminGrid.remive();
 	  		$('#signin-container').show();
 	  		$('#main-app-container').hide();
 		}
