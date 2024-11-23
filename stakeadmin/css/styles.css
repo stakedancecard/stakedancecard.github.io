@@ -43,7 +43,7 @@ div.subtitle {
 }
 
 .form-signin {
-    max-width: 330px;
+    max-width: 400px;
     padding: 15px;
     margin: 0 auto;
 }
@@ -123,5 +123,13 @@ body h4 {
 }
 
 .backgrid .select-cell {
-    text-align: left;  
+    text-align: left;
+}
+
+.alert-box {
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    max-width: 400px;
+    font-size: 16px;
 }

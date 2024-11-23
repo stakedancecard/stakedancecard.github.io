@@ -24,6 +24,14 @@
 	<!-- Sign in container -->
 	<div class="container" id="signin-container">
 
+		<div class="alert alert-info alert-box" role="alert">
+			<h4 class="alert-heading">Stake Dance Card App is Moving!</h4>
+			<p style="margin-top: 16px; margin-bottom: 16px">The Stake Dance Card App is moving to a web app. Please see
+				important information at:
+				<a target="_blank" href='https://stakedancecard.app/webappinfo'>stakedancecard.app/webappinfo</a>
+			</p>
+		</div>
+
 		<form class="form-signin" role="form">
 			<h3 class="form-signin-heading">Stake Dance Card Admin</h3>
 			<h3 class="form-signin-heading">Please sign in</h3>
@@ -40,7 +48,8 @@
 		<nav class="navbar navbar-default" role="navigation">
 			<p class="navbar-text">Stake Dance Card Admin</p>
 			<button type="button" class="btn btn-default navbar-btn navbar-right" onclick="signOut()">Sign out</button>
-			<button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal" data-target="#helpPanel">Help</button>
+			<button type="button" class="btn btn-default navbar-btn navbar-right" data-toggle="modal"
+				data-target="#helpPanel">Help</button>
 		</nav>
 
 		<div id="region-name">Subtext for header</div>
@@ -62,7 +71,8 @@
 			<br>
 			<button type="button" class="btn btn-success add-button" onclick="addDance()">Add Dance</button>
 			<br>
-			<p class="grid-text-message">*Optional Address is needed only if the dance is at a different address than the one
+			<p class="grid-text-message">*Optional Address is needed only if the dance is at a different address than
+				the one
 				normally used by the stake.</p>
 		</div>
 
@@ -86,27 +96,38 @@
 		</div>
 
 		<!-- Help Modal -->
-		<div class="modal fade" id="helpPanel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal fade" id="helpPanel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+			aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<button type="button" class="close" data-dismiss="modal"><span
+								aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
 						<h4 class="modal-title" id="myModalLabel">Stake Dance Card Admin Help</h4>
 					</div>
 					<div class="modal-body">
-						<p>Add all the stakes in your region by clicking the "Add Stake" button and entering the name of the stake, the
-							address where the dances are held and a password that will be used by the bishops to activate the dance card. We
-							suggest a password that is easy for the bishops to remember, but hard for the youth to guess.</p>
-						<p>The "Expire Months" column indicates how many months the dance card signature is valid after the bishop signs
-							it. By default, it expires 12 months (one year) after it is signed. If you want it to always expire on January 1
+						<p>Add all the stakes in your region by clicking the "Add Stake" button and entering the name of
+							the stake, the
+							address where the dances are held and a password that will be used by the bishops to
+							activate the dance card. We
+							suggest a password that is easy for the bishops to remember, but hard for the youth to
+							guess.</p>
+						<p>The "Expire Months" column indicates how many months the dance card signature is valid after
+							the bishop signs
+							it. By default, it expires 12 months (one year) after it is signed. If you want it to always
+							expire on January 1
 							of the following year, set it to zero.</p>
-						<p>Next add all the dances by clicking the "Add Dance" button. Select the appropriate stake, enter the date and
-							time, and add any additional info such as the type of dance (casual, church dress, Halloween, etc.) Enter an
-							address if the location of the dance is different from the normal one used by the stake. The date and time must
+						<p>Next add all the dances by clicking the "Add Dance" button. Select the appropriate stake,
+							enter the date and
+							time, and add any additional info such as the type of dance (casual, church dress,
+							Halloween, etc.) Enter an
+							address if the location of the dance is different from the normal one used by the stake. The
+							date and time must
 							be entered in this format:</p>
 						<p>2014-09-26 8:00pm</p>
 						<p>The day and month must be entered as 2 digits including any leading zeroes.</p>
-						<p>Add your information and that of any other administrators by clicking the "Add Administrator" button.</p>
+						<p>Add your information and that of any other administrators by clicking the "Add Administrator"
+							button.</p>
 						<p>Use the editor at the bottom to enter dance standards for your region.</p>
 					</div>
 					<div class="modal-footer">
@@ -522,16 +543,16 @@
 			regionObject.save({
 				standards: text
 			}, {
-					success: function (standards) {
-						// The object was saved successfully.
-						alert("Standards were successfully saved");
-					},
-					error: function (standards, error) {
-						// The save failed.
-						// error is a Parse.Error with an error code and message.
-						alert("There was a problem saving standards.\n\n" + error);
-					}
-				});
+				success: function (standards) {
+					// The object was saved successfully.
+					alert("Standards were successfully saved");
+				},
+				error: function (standards, error) {
+					// The save failed.
+					// error is a Parse.Error with an error code and message.
+					alert("There was a problem saving standards.\n\n" + error);
+				}
+			});
 		}
 
 		function signIn() {
